@@ -14,7 +14,7 @@ Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 
 ## How to use
 To generate DFXML for an HFS-formatted volume, use:
-`python hfs2dfxml.py \[HFS volume\] \[output file\]`
+`python hfs2dfxml.py [HFS volume] [output file]`
 
 Optionally, place hfs2dfxml in your Python path and import it in your own code to call `hfs_volobj`. This function returns a standalone DFXML Volume object.
 
