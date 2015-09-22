@@ -233,6 +233,7 @@ def _line_to_dfxml(hfs_line):
     if hfs_line.get('mtime') is not None:
         this_fileobj.mtime = hfs_line['mtime'].isoformat()
     # NOTE: The following values are in the projected HFS namespace.
+    # See: https://github.com/dfxml-working-group/dfxml_schema/issues/23
     HFS_namespace_elems = DFXML.OtherNSElementList()
     if hfs_line.get('HFStype_creator') is not None:
         _HFStype_creator = ET.Element('{http://www.forensicswiki.org/' +
