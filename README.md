@@ -2,10 +2,10 @@
 Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 
 ## System Requirements:
-* `hfsutils` ([http://www.mars.org/home/rob/proj/hfs]; or installed via your distribution's package manager)
+* `hfsutils` (http://www.mars.org/home/rob/proj/hfs; or installed via your distribution's package manager)
 * `python-magic`
-* Python DFXML Bindings ([http://github.org/simsong/dfxml])
-* DFXML Schema ([http://github.org/dfxml-working-group/dfxml-schema]) for testing and validation of results
+* Python DFXML Bindings (http://github.org/simsong/dfxml)
+* DFXML Schema (http://github.org/dfxml-working-group/dfxml-schema) for testing and validation of results
 
 ## Setup and configuration
 * Install `hfsutils` and `python-magic`
