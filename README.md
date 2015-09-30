@@ -6,6 +6,7 @@ Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 * `python-magic`
 * Python DFXML Bindings (http://github.org/simsong/dfxml)
 * DFXML Schema (http://github.org/dfxml-working-group/dfxml-schema) for testing and validation of results
+* `xmllint` for validation (in tests) and pretty-printing DFXML output.
 
 ## Setup and configuration
 * Install `hfsutils` and `python-magic`
