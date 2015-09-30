@@ -406,5 +406,6 @@ if __name__ == '__main__':
         sys.exit('hfs2dfxml error: HFS Volume not found.')
     with open(dfxml, 'w') as dfxmloutput:
         dfxmloutput.write(hfs2dfxml(hfs).to_dfxml())
+    # NOTE: Comment out line below if pretty-printing XML isn't needed    
     subprocess.check_output(['xmllint', '--format', dfxml,
                              '--output', dfxml])
