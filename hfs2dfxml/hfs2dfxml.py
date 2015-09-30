@@ -163,8 +163,7 @@ def _file_line(regex_file_cre):
 def _hcopy_res(hfs_filepath):
     # Takes full path of hfs file.
     # Returns strings for libmagic, md5 and sha1 hash of file.
-    # NOTE: This copies the output of hcopy to a temporary file and
-    #       runs file externally.
+    # NOTE: This copies the output of hcopy to a temporary file.
     # NOTE: This only runs on data fork of specified file. (hcopy -r)
     with tempfile.NamedTemporaryFile(delete=False) as tmp_fileout:
         tmp_fileout.write(subprocess.check_output(['hcopy', '-r',
