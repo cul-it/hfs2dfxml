@@ -15,13 +15,10 @@ Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 
 ## BitCurator directions
 The following directions were tested on BitCurator 1.5.11. The following installation/configuration steps require the Terminal.
-### Set up and check dependencies
 * `which xmllint` - Output should be `/usr/bin/xmllint`
 * `which git` - Output should be `/usr/bin/git`
 * `sudo apt-get install hfsutils`
 * `which hmount` - Output should be `/usr/local/bin/hmount` or `/usr/bin/hmount`. (If this doesn't work, installation of hfsutils may have failed.)
-
-### Set up hfs2dfxml (on Desktop)
 * `cd ~/Desktop`
 * `git clone https://github.com/cul-it/hfs2dfxml`
 * `cd hfs2dfxml/hfs2dfxml`
