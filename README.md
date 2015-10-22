@@ -19,6 +19,7 @@ The following directions were tested on BitCurator 1.5.11. The following install
 * `which git` - Output should be `/usr/bin/git`
 * `sudo apt-get install hfsutils`
 * `which hmount` - Output should be `/usr/local/bin/hmount` or `/usr/bin/hmount`. (If this doesn't work, installation of hfsutils may have failed.)
+* `sudo apt-get install python-magic`
 * `cd ~/Desktop`
 * `git clone https://github.com/cul-it/hfs2dfxml`
 * `cd hfs2dfxml/hfs2dfxml`
