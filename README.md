@@ -29,7 +29,9 @@ The following directions were tested on BitCurator 1.5.11. The following install
 
 ## How to use
 To generate DFXML for an HFS-formatted volume, navigate to the hfs2dfxml directory and use:
+
 `python hfs2dfxml.py [HFS volume] [output file]`
+
 Note: [output file] must not already exist.
 
 Optionally, place hfs2dfxml in your Python path and import it in your own code to call `hfs_volobj`. This function returns a standalone DFXML Volume object.
