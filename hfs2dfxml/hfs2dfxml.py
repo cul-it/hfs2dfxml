@@ -29,6 +29,7 @@ import Objects as DFXML
 PATTERNFILE = re.compile('^(\d+)\s+(\w+)\s+(.{4}/.{4})\s+(\d+)\s+(\d+)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*")(\**)$')
 PATTERNDIR = re.compile('^(\d+)\s+(\w+)\s+(\d+\sitems*)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*"):$')
 
+DEBUG = False
 
 def _reformat_date(unformatted):
     # Reformats dates found in hls output for comparisons.
@@ -85,6 +86,12 @@ def _call_hls():
         hls_mod_output = subprocess.check_output(['hls', '-1amilQRUFN'])
     except subprocess.CalledProcessError as e:
         sys.exit('_call_hls error: {0}'.format(e.output,))
+    if DEBUG:
+        with open('DEBUG_hfs2dfxml.txt', 'w') as debugfile:
+            _debug_output = hls_cre_output.split('\n')
+            for dbg in _debug_output:
+                debugfile.write(dbg.decode('macroman').encode('unicode-escape'))
+                debugfile.write('\n')
     return (hls_cre_output, hls_mod_output)
 
 
