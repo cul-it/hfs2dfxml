@@ -37,6 +37,7 @@ Note: [output file] must not already exist.
 Optionally, place hfs2dfxml in your Python path and import it in your own code to call `hfs_volobj`. This function returns a standalone DFXML Volume object.
 
 ## Known limitations (and implied to do list)
+* HFS namespace is projected and not yet officially part of the DFXML schema. See: [https://github.com/dfxml-working-group/dfxml_schema/issues/23]
 * Byte runs not reported for fileobjects
 * Timestamps only include day/month/year and not specific time
 * Tested on CD-ROM disc image of HFS volume only; submissions of additional HFS volumes to do further testing will be happily accepted
