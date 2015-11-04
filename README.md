@@ -43,7 +43,7 @@ Optionally, place hfs2dfxml in your Python path and import it in your own code t
 * Byte runs not reported for fileobjects
 * Timestamps only include day/month/year and not specific time
 * Tested on CD-ROM disc image of HFS volume only; submissions of additional HFS volumes to do further testing will be happily accepted
-If you encounter a bug or issue not listed above, please feel free to file an issue in GitHub. There is a DEBUG flag at the top of the script which can be set to `True` and that will produce a logfile named `DEBUG_hfs2dfxml.txt` to assist in debugging.
+If you encounter a bug or issue not listed above, please feel free to file an issue in GitHub. There is a DEBUG flag at the top of the script which can be set to `True` and that will produce a logfile named `DEBUG_hfs2dfxml.txt` to assist in debugging, or can be used directly in the `debug_raw_hfs.py` file.
 
 ### Contact
 dd388 AT cornell DOT edu
