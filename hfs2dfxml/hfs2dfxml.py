@@ -314,9 +314,11 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
                                                     _filename))
                     _filename = _filename.strip('"')
                     _filename = _filename.encode('unicode-escape')
+                    dirprefix = this_dir.decode('macroman')
+                    dirprefix = dirprefix.encode('unicode-escape')
                     if this_dir != '':
                         this_line['filename'] = ':{0}:{1}'.format(
-                                                    this_dir, _filename)
+                                                    dirprefix, _filename)
                     else:
                         this_line['filename'] = ':{0}'.format(
                                                             _filename)
