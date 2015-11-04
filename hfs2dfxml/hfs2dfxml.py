@@ -265,7 +265,7 @@ def _line_to_dfxml(hfs_line):
     return this_fileobj
 
 
-def _parse_hls_cre(hls_cre_raw, hls_mod_dict):
+def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
     # Takes in raw hls output with creation times and dict with mod times
     # Returns list of dictionaries with HFS data
     hfs_all_files = []
@@ -320,7 +320,7 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict):
                     else:
                         this_line['filename'] = ':{0}'.format(
                                                             _filename)
-                    if this_line['filesize'] != '0':
+                    if hcopy and this_line['filesize'] != '0':
                         _hcopy_name = this_line['filename'].decode(
                                                 'unicode-escape').encode(
                                                 'ascii', 'replace')
