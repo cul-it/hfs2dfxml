@@ -1,5 +1,6 @@
 # hfs2dfxml
 Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
+This script is still in development. If you encounter an error or unexpected results, please file an issue on GitHub, or use the contact information below.
 
 ## System Requirements:
 * `hfsutils` (http://www.mars.org/home/rob/proj/hfs; or installed via your distribution's package manager)
@@ -26,6 +27,7 @@ The following directions were tested on BitCurator 1.5.11. The following install
 * `git clone https://github.com/simsong/dfxml/`
 * `cd ../tests`
 * `git clone https://github.com/dfxml-working-group/dfxml_schema`
+* To run, you should be in the `hfs2dfxml/hfs2dfxml` directory
 
 ## How to use
 To generate DFXML for an HFS-formatted volume, navigate to the hfs2dfxml directory and use:
@@ -41,10 +43,11 @@ Optionally, place hfs2dfxml in your Python path and import it in your own code t
 * Byte runs not reported for fileobjects
 * Timestamps only include day/month/year and not specific time
 * Tested on CD-ROM disc image of HFS volume only; submissions of additional HFS volumes to do further testing will be happily accepted
-If you encounter a bug or issue not listed above, please feel free to file an issue in GitHub
+If you encounter a bug or issue not listed above, please feel free to file an issue in GitHub. There is a DEBUG flag at the top of the script which can be set to `True` and that will produce a logfile named `DEBUG_hfs2dfxml.txt` to assist in debugging.
 
 ### Contact
 dd388 AT cornell DOT edu
 
 ### Thank you
-Alex Nelson, Kate Tasker
+Alex Nelson for DFXML guidance and help prioritizing code features.
+Kate Tasker for testing various HFS disk images and supplying data for debugging.
