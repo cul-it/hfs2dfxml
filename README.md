@@ -15,22 +15,23 @@ This script is still in development. It is recommended that you check your resul
 
 ## BitCurator directions
 The following directions were tested on BitCurator 1.5.11. The following installation/configuration steps require the Terminal.
+
 * Test dependencies
-** `which xmllint` - Output should be `/usr/bin/xmllint`
-** `which git` - Output should be `/usr/bin/git`
+  * `which xmllint` - Output should be `/usr/bin/xmllint`
+  * `which git` - Output should be `/usr/bin/git`
 * Get hfsutils and test
-* `sudo apt-get install hfsutils`
-* `which hmount` - Output should be `/usr/local/bin/hmount` or `/usr/bin/hmount`. (If this doesn't work, installation of hfsutils may have failed.)
+  * `sudo apt-get install hfsutils`
+  * `which hmount` - Output should be `/usr/local/bin/hmount` or `/usr/bin/hmount`. (If this doesn't work, installation of hfsutils may have failed.)
 * Get python-magic
-** `sudo apt-get install python-magic`
+  * `sudo apt-get install python-magic`
 * Download hfs2dfxml and set up DFXML libraries and schema
-** `cd ~/Desktop`
-** `git clone https://github.com/cul-it/hfs2dfxml`
-** `cd hfs2dfxml/hfs2dfxml`
-** `git clone https://github.com/simsong/dfxml/`
-** `cd ../tests`
-** `git clone https://github.com/dfxml-working-group/dfxml_schema`
-** To run, you should be in the `hfs2dfxml/hfs2dfxml` directory
+  * `cd ~/Desktop`
+  * `git clone https://github.com/cul-it/hfs2dfxml`
+  * `cd hfs2dfxml/hfs2dfxml`
+  * `git clone https://github.com/simsong/dfxml/`
+  * `cd ../tests`
+  * `git clone https://github.com/dfxml-working-group/dfxml_schema`
+  * To run, you should be in the `hfs2dfxml/hfs2dfxml` directory
 
 ## How to use
 To generate DFXML for an HFS-formatted volume, navigate to the hfs2dfxml directory and use:
