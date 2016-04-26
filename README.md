@@ -19,9 +19,10 @@ The following directions were tested on BitCurator 1.5.11. The following install
 * Test dependencies
   * `which xmllint` - Output should be `/usr/bin/xmllint`
   * `which git` - Output should be `/usr/bin/git`
-* Get hfsutils and test
-  * `sudo apt-get install hfsutils`
-  * `which hmount` - Output should be `/usr/local/bin/hmount` or `/usr/bin/hmount`. (If this doesn't work, installation of hfsutils may have failed.)
+  * `which hmount` - Output should be `/usr/local/bin/hmount` (no output means hfsutils is not installed)
+* Install hfsutils (only if `which hmount` fails; see above)
+  * `sudo apt-get install hfsutils` (to install hfsutils)
+  * `which hmount` - Output should be `/usr/bin/hmount` (no output means hfsutils is not installed)
 * Get python-magic
   * `sudo apt-get install python-magic`
 * Download hfs2dfxml and set up DFXML libraries and schema
