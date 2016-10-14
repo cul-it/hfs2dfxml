@@ -4,9 +4,11 @@ Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 ## Caveat
 This script is still in development. It is recommended that you check your results against another tool. If you encounter an error or unexpected results, please file an issue on GitHub, or use the contact information below.
 
+This branch is for Python 3 development.
+
 ## System requirements and setup
 * `hfsutils` (http://www.mars.org/home/rob/proj/hfs; or installed via your distribution's package manager)
-* `python-magic`
+* `python3-magic`
 * `xmllint` for validation (in tests) and pretty-printing DFXML output.
 * Python DFXML Bindings (http://github.org/simsong/dfxml)
 * `hfs2dfxml/hfs2dfxml.py` - Specify path for Python DFXML Bindings in script
@@ -23,8 +25,8 @@ The following directions were tested on BitCurator 1.5.11. The following install
 * Install hfsutils (only if `which hmount` fails; see above)
   * `sudo apt-get install hfsutils` (to install hfsutils)
   * `which hmount` - Output should be `/usr/bin/hmount` (no output means hfsutils is not installed)
-* Get python-magic
-  * `sudo apt-get install python-magic`
+* Get python3-magic
+  * `sudo apt-get install python3-magic`
 * Download hfs2dfxml and set up DFXML libraries and schema
   * `cd ~/Desktop`
   * `git clone https://github.com/cul-it/hfs2dfxml`
@@ -37,7 +39,7 @@ The following directions were tested on BitCurator 1.5.11. The following install
 ## How to use
 To generate DFXML for an HFS-formatted volume, navigate to the hfs2dfxml directory and use:
 
-`python hfs2dfxml.py [HFS volume] [output file]`
+`python3 hfs2dfxml.py [HFS volume] [output file]`
 
 Note: [output file] must not already exist.
 
