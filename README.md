@@ -4,6 +4,8 @@ Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 ## Caveat
 This script is still in development. It is recommended that you check your results against another tool. If you encounter an error or unexpected results, please file an issue on GitHub, or use the contact information below.
 
+This version uses Python 2.7. For Python 3, see: https://github.com/cul-it/hfs2dfxml/tree/python3
+
 ## System requirements and setup
 * `hfsutils` (http://www.mars.org/home/rob/proj/hfs; or installed via your distribution's package manager)
 * `python-magic`
