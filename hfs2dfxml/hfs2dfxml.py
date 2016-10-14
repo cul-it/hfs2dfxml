@@ -16,6 +16,7 @@ import subprocess
 import re
 import tempfile
 import magic
+import argparse
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from hashlib import md5
@@ -407,14 +408,19 @@ def hfs2dfxml(hfs_file):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        sys.exit('Usage: python hfs2dfxml.py [HFS volume] [output file]')
-    if os.path.isfile(sys.argv[1]):
-        hfs = sys.argv[1]
-        if os.path.isfile(sys.argv[2]):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('hfsvol', metavar='[HFS Volume]',
+                        help='Path to HFS disk image')
+    parser.add_argument('output', metavar='[Output File]',
+                        help='Name of output XML file (will not overwrite)')
+    args = parser.parse_args()
+
+    if os.path.isfile(args.hfsvol):
+        hfs = args.hfsvol
+        if os.path.isfile(args.output):
             sys.exit('hfs2dfxml error: Output file already exists.')
         else:
-            dfxml = sys.argv[2]
+            dfxml = args.output
     else:
         sys.exit('hfs2dfxml error: HFS Volume not found.')
     with open(dfxml, 'w') as dfxmloutput:
