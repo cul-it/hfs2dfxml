@@ -229,7 +229,7 @@ def _dir_line(regex_dir_cre):
     return HFS_dir_line
 
 
-def _line_to_dfxml(hfs_line):
+def _line_to_dfxml(hfs_line, path_delim):
     # Takes in dictionary with properties of HFS file or directory
     # Returns DFXML FileObject with appropriate values assigned.
     # NOTE: hfsutils output does not include deleted files.
@@ -242,6 +242,11 @@ def _line_to_dfxml(hfs_line):
         this_fileobj.filesize = hfs_line['filesize']
     else:
         this_fileobj.filename = hfs_line['dirname']
+
+    # Only change delimiter in filepath if needed
+    if path_delim != 'classic':
+        this_fileobj.filename = this_fileobj.filename.replace(':', '/')
+
     if hfs_line.get('libmagic') is not None:
         this_fileobj.libmagic = hfs_line['libmagic']
         this_fileobj.md5 = hfs_line['md5']
@@ -366,7 +371,7 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
     return hfs_all_files
 
 
-def hfs_volobj(hfs_filename):
+def hfs_volobj(hfs_filename, hfs_delimiter):
     this_volobj = DFXML.VolumeObject()
     this_volobj.ftype_str = 'HFS'
     _volmagic = magic.open(magic.MAGIC_NONE)
@@ -392,18 +397,18 @@ def hfs_volobj(hfs_filename):
     hlsmoddict = _parse_hls_mod(hlsmod)
     linedicts = _parse_hls_cre(hlscre, hlsmoddict)
     for linedict in linedicts:
-        this_volobj.append(_line_to_dfxml(linedict))
+        this_volobj.append(_line_to_dfxml(linedict, hfs_delimiter))
     _call_humount(report_err=True)  # Report if HFS file did not unmount
     return this_volobj
 
 
-def hfs2dfxml(hfs_file):
+def hfs2dfxml(hfs_file, hfs_delim):
     _call_humount()  # Ensure no other volume mounted by hfsutils
     ET.register_namespace('hfs', 'http://www.forensicswiki.org/wiki/HFS')
     DFXML_root = DFXML.DFXMLObject(version='1.0',
                                    dc={'type': 'Disk Image'})
     DFXML_root.sources = [os.path.basename(hfs_file)]
-    DFXML_root.append(hfs_volobj(hfs_file))
+    DFXML_root.append(hfs_volobj(hfs_file, hfs_delim))
     return DFXML_root
 
 
@@ -413,6 +418,10 @@ if __name__ == '__main__':
                         help='Path to HFS disk image')
     parser.add_argument('output', metavar='[Output File]',
                         help='Name of output XML file (will not overwrite)')
+    parser.add_argument('-d', '--delimiter', type=str, choices=['classic', 
+                        'macosx', 'osx'], default='classic',
+                        help='Delimiter format (classic [default], macosx, osx)')
+                        
     args = parser.parse_args()
 
     if os.path.isfile(args.hfsvol):
@@ -423,8 +432,11 @@ if __name__ == '__main__':
             dfxml = args.output
     else:
         sys.exit('hfs2dfxml error: HFS Volume not found.')
+
+    delim = args.delimiter
+
     with open(dfxml, 'w') as dfxmloutput:
-        dfxmloutput.write(hfs2dfxml(hfs).to_dfxml())
+        dfxmloutput.write(hfs2dfxml(hfs, delim).to_dfxml())
     # NOTE: Comment out line below if pretty-printing XML isn't needed    
     subprocess.check_output(['xmllint', '--format', dfxml,
                              '--output', dfxml])
