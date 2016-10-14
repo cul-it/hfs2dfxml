@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # hfs2dfxml parses hfsutils output into DFXML
 # or produce DFXML Volume Object for HFS partition
@@ -8,7 +8,7 @@
 #               Python DFXML Bindings (specify path below)
 #               DFXML Schema (for tests)
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 import os
 import sys
@@ -29,13 +29,20 @@ import Objects as DFXML
 PATTERNFILE = re.compile('^(\d+)\s+(\w+)\s+(.{4}/.{4})\s+(\d+)\s+(\d+)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*")(\**)$')
 PATTERNDIR = re.compile('^(\d+)\s+(\w+)\s+(\d+\sitems*)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*"):$')
 
-DEBUG = False
+DEBUG = True
 
 def _reformat_date(unformatted):
     # Reformats dates found in hls output for comparisons.
     reformat = unformatted.replace('  ', ' ')
     reformat = datetime.strptime(reformat, '%b %d %Y')
     return reformat
+
+
+def _format_hcopy_name(prehcopy):
+    # Takes a filename and prepares it for use in hcopy.
+    # Takes all non-ascii chars and converts to ?
+    formathcopy = ''.join([i if ord(i) < 128 else '?' for i in prehcopy])
+    return formathcopy
 
 
 def _call_humount(report_err=False):
@@ -54,6 +61,7 @@ def _call_hmount(hfsfilename):
     try:
         hmount_output = subprocess.check_output(['hmount', hfsfilename],
                                                 stderr=subprocess.STDOUT)
+        hmount_output = hmount_output.decode('utf-8')
     except subprocess.CalledProcessError as e:
         sys.exit('_call_hmount error: {0}'.format(e.output,))
     return hmount_output
@@ -79,18 +87,24 @@ def _call_hls():
         # -U Do not sort directory contents
         # -F Cause certain output filenames to be followed by
         #    a single-character flag (e.g., colon for directories and
-        #    asterisk for applications.
+        #    asterisk for applications.)
         # -N Cause all filenames to be output verbatim without any
         #    escaping or question mark substitution.
+
         hls_cre_output = subprocess.check_output(['hls', '-1acilQRUFN'])
         hls_mod_output = subprocess.check_output(['hls', '-1amilQRUFN'])
+
+        # NOTE: Decode using macroman
+        hls_cre_output = hls_cre_output.decode('macroman')
+        hls_mod_output = hls_mod_output.decode('macroman')
+ 
     except subprocess.CalledProcessError as e:
         sys.exit('_call_hls error: {0}'.format(e.output,))
     if DEBUG:
         with open('DEBUG_hfs2dfxml.txt', 'w') as debugfile:
             _debug_output = hls_cre_output.split('\n')
             for dbg in _debug_output:
-                debugfile.write(dbg.decode('macroman').encode('unicode-escape'))
+                debugfile.write(dbg)
                 debugfile.write('\n')
     return (hls_cre_output, hls_mod_output)
 
@@ -130,8 +144,7 @@ def _parse_hls_mod(hls_mod_raw):
             sys.exit('_parse_hls_mod error: Duplcate CNID found.\n' +
                      '|{0}|'.format(hls_mod_line))
         else:
-            hls_mod_dict[mod_cnid] = (mod_mdate,
-                                      mod_filename.decode('macroman'))
+            hls_mod_dict[mod_cnid] = (mod_mdate, mod_filename)
     return hls_mod_dict
 
 
@@ -156,14 +169,12 @@ def _file_line(regex_file_cre):
 
     if ((regex_file_cre.group(3) != '    /    ') and
        (regex_file_cre.group(3) != '????/????')):
-        _HFStype_creator = regex_file_cre.group(3).decode('macroman')
-        HFS_file_line['HFStype_creator'] = _HFStype_creator.encode(
-                                           'unicode-escape')
+        HFS_file_line['HFStype_creator'] = regex_file_cre.group(3)
     _crtime = _reformat_date(regex_file_cre.group(6))
     if _crtime != datetime(1904, 1, 1):
         HFS_file_line['crtime'] = _crtime
 
-    HFS_file_line['_filename'] = regex_file_cre.group(7).decode('macroman')
+    HFS_file_line['_filename'] = regex_file_cre.group(7)
     return HFS_file_line
 
 
@@ -213,7 +224,7 @@ def _dir_line(regex_dir_cre):
     _crtime = _reformat_date(regex_dir_cre.group(4))
     if _crtime != datetime(1904, 1, 1):
         HFS_dir_line['crtime'] = _crtime
-    HFS_dir_line['_dirname'] = regex_dir_cre.group(5).decode('macroman')
+    HFS_dir_line['_dirname'] = regex_dir_cre.group(5)
     return HFS_dir_line
 
 
@@ -313,9 +324,8 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
                                  '|{0}|{1}|'.format(_fname_verify,
                                                     _filename))
                     _filename = _filename.strip('"')
-                    _filename = _filename.encode('unicode-escape')
-                    _dirprefix = this_dir.decode('macroman')
-                    _dirprefix = _dirprefix.encode('unicode-escape')
+                    _dirprefix = this_dir
+
                     if this_dir != '':
                         this_line['filename'] = ':{0}:{1}'.format(
                                                     _dirprefix, _filename)
@@ -323,13 +333,9 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
                         this_line['filename'] = ':{0}'.format(
                                                             _filename)
                     if hcopy and this_line['filesize'] != '0':
-                        _hcopy_name = this_line['filename'].decode(
-                                                'unicode-escape').encode(
-                                                'ascii', 'replace')
+                        _hcopy_name = _format_hcopy_name(this_line['filename'])
                         this_line['libmagic'], this_line['md5'], \
                         this_line['sha1'] = _hcopy_res(_hcopy_name)
-                    # NOTE: To revert filename back to "original":
-                    # this_line['filename'].decode('unicode-escape')
 
                 elif (not(parse_file_cre) and parse_dir_cre):
                     this_line = _dir_line(parse_dir_cre)
@@ -348,7 +354,6 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
                                  '|{0}|{1}|'.format(_dname_verify,
                                                     _dirname))
                     _dirname = _dirname.strip('"')
-                    _dirname = _dirname.encode('unicode-escape')
                     if this_dir != '':
                         this_line['dirname'] = ':{0}:{1}'.format(this_dir,
                                                                  _dirname)
