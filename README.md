@@ -41,7 +41,14 @@ To generate DFXML for an HFS-formatted volume, navigate to the hfs2dfxml directo
 
 `python3 hfs2dfxml.py [HFS volume] [output file]`
 
-Note: [output file] must not already exist.
+Note: `[output file]` must not already exist.
+
+Optional parameters: `-d, --delimiter [classic, macosx, osx]`
+
+`classic`: Output paths with a colon delimiter
+`macosx, osx`: Output paths with a slash delimiter
+
+Note: the `macosx` and `osx` options are essentially the same at this point, but refer to future functions to specify representation of the resource fork as a `fileobject` in the output DFXML.
 
 Optionally, place hfs2dfxml in your Python path and import it in your own code to call `hfs_volobj`. This function returns a standalone DFXML Volume object.
 
