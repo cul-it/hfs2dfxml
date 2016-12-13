@@ -1,7 +1,6 @@
-*.pyc
-*.iso
-*.xml
-hfs2dfxml/dfxml
-hfs2dfxml/dfxml/*
-tests/dfxml_schema
-tests/dfxml_schema/*
+
+hfs2dfxml/DEBUG_hfs2dfxml.txt
+
+hfs2dfxml/dfxml/
+
+tests/dfxml_schema/
