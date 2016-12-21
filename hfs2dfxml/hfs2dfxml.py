@@ -64,7 +64,8 @@ def _call_hmount(hfsfilename):
                                                 stderr=subprocess.STDOUT)
         hmount_output = hmount_output.decode('utf-8')
     except subprocess.CalledProcessError as e:
-        sys.exit('_call_hmount error: {0}'.format(e.output,))
+        hmount_output = (True, e)
+#        sys.exit('_call_hmount error: {0}'.format(e.output,))
     return hmount_output
 
 
@@ -100,7 +101,8 @@ def _call_hls():
         hls_mod_output = hls_mod_output.decode('macroman')
  
     except subprocess.CalledProcessError as e:
-        sys.exit('_call_hls error: {0}'.format(e.output,))
+#        sys.exit('_call_hls error: {0}'.format(e.output,))
+        return (True, e)
     if DEBUG:
         with open('DEBUG_hfs2dfxml.txt', 'w') as debugfile:
             _debug_output = hls_cre_output.split('\n')
@@ -140,10 +142,12 @@ def _parse_hls_mod(hls_mod_raw):
         else:
             sys.exit('_parse_hls_mod error: Unexpected line format.\n' +
                      '|{0}|'.format(hls_mod_line))
+            # NOTE: Should be a logger event, probably?
 
         if mod_cnid in hls_mod_dict:
             sys.exit('_parse_hls_mod error: Duplcate CNID found.\n' +
                      '|{0}|'.format(hls_mod_line))
+            # NOTE: Okay, what even happens in this case.
         else:
             hls_mod_dict[mod_cnid] = (mod_mdate, mod_filename)
     return hls_mod_dict
@@ -163,8 +167,9 @@ def _file_line(regex_file_cre):
         HFS_file_line['name_type'] = 'r'
         HFS_file_line['HFSlocked'] = '1'
     else:
-        sys.exit('_file_line error: Unexpected Entry Type.\n' +
-                 '{0}'.format(regex_file_cre.groups()))
+        HFS_file_line['name_type'] = '-' # Unknown type if not f
+#        sys.exit('_file_line error: Unexpected Entry Type.\n' +
+#                 '{0}'.format(regex_file_cre.groups()))
     if regex_file_cre.group(2).endswith('i'):
         HFS_file_line['HFSflags'] = 'i'
 
@@ -218,8 +223,9 @@ def _dir_line(regex_dir_cre):
         HFS_dir_line['name_type'] = 'd'
         HFS_dir_line['HFSlocked'] = '1'
     else:
-        sys.exit('_dir_line error: Unexpected entry type.\n' +
-                 '{0}'.format(regex_dir_cre.groups()))
+        HFS_dir_line['name_type'] = '-' # Unknown type if not d
+#        sys.exit('_dir_line error: Unexpected entry type.\n' +
+#                 '{0}'.format(regex_dir_cre.groups()))
     if regex_dir_cre.group(2).endswith('i'):
         HFS_dir_line['HFSflags'] = 'i'
     _crtime = _reformat_date(regex_dir_cre.group(4))
@@ -420,7 +426,13 @@ def hfs_volobj(hfs_filename, hfs_delimiter):
     this_volobj.block_size = _block_size
     this_volobj.block_count = _block_count
     hfs_fileinfo = _call_hmount(hfs_filename)
+    if hfs_fileinfo[0] is True:
+        this_volobj.error = hfs_fileinfo[1]
+        return this_volobj # NOTE: This doesn't seem to get written out to the XML; why?
     hlscre, hlsmod = _call_hls()
+    if hlscre is True:
+        this_volobj.error = hlsmod
+        return this_volobj # NOTE: This doesn't seem to get written out to the XML; why?
     hlsmoddict = _parse_hls_mod(hlsmod)
     linedicts = _parse_hls_cre(hlscre, hlsmoddict)
     for linedict in linedicts:
@@ -437,7 +449,7 @@ def hfs_volobj(hfs_filename, hfs_delimiter):
 def hfs2dfxml(hfs_file, hfs_delim):
     _call_humount()  # Ensure no other volume mounted by hfsutils
     ET.register_namespace('hfs', 'http://www.forensicswiki.org/wiki/HFS')
-    DFXML_root = DFXML.DFXMLObject(version='1.0',
+    DFXML_root = DFXML.DFXMLObject(version='1.1.1',
                                    dc={'type': 'Disk Image'})
     DFXML_root.sources = [os.path.basename(hfs_file)]
     DFXML_root.append(hfs_volobj(hfs_file, hfs_delim))
