@@ -4,3 +4,7 @@ hfs2dfxml/DEBUG_hfs2dfxml.txt
 hfs2dfxml/dfxml/
 
 tests/dfxml_schema/
+
+*.pyc
+
+*.swp
