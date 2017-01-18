@@ -258,9 +258,6 @@ def _line_to_dfxml(hfs_line, path_delim):
     # Only change delimiter in filepath if needed (data fork)
     if path_delim != 'classic':
         this_fileobj.filename = this_fileobj.filename.replace(':', '/')
-
-    # Admittedly a hack for hfsexplorer extracts
-    if path_delim == 'companion':
         this_fileobj.filename = this_fileobj.filename.lstrip('/')
 
     if hfs_line.get('libmagic') is not None:
