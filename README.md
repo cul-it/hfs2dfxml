@@ -51,6 +51,8 @@ Optional parameters: `-d, --delimiter [classic, macosx, osx, companion]`
 
 Optionally, place hfs2dfxml in your Python path and import it in your own code to call `hfs_volobj`. This function returns a standalone DFXML Volume object.
 
+If you encounter the following error, "magic module object has no attribte 'open'" ensure that python3-magic is installed. If you encounter an error with ascii codecs, ensure you're running the code with python3.
+
 ## Known limitations (and implied to do list)
 * HFS namespace is projected and not yet officially part of the DFXML schema. See: https://github.com/dfxml-working-group/dfxml_schema/issues/23
 * Byte runs not reported for fileobjects
