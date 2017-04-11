@@ -8,7 +8,7 @@
 #               Python DFXML Bindings (specify path below)
 #               DFXML Schema (for tests)
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 import os
 import sys
@@ -23,14 +23,14 @@ from hashlib import md5
 from hashlib import sha1
 
 # Import Python DFXML Bindings
-sys.path.append('dfxml/python')
+#sys.path.append('dfxml/python')
 import Objects as DFXML
 
 
 PATTERNFILE = re.compile('^(\d+)\s+(\w+)\s+(.{4}/.{4})\s+(\d+)\s+(\d+)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*")(\**)$')
 PATTERNDIR = re.compile('^(\d+)\s+(\w+)\s+(\d+\sitems*)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*"):$')
 
-DEBUG = True
+DEBUG = False
 
 def _reformat_date(unformatted):
     # Reformats dates found in hls output for comparisons.
@@ -64,7 +64,8 @@ def _call_hmount(hfsfilename):
                                                 stderr=subprocess.STDOUT)
         hmount_output = hmount_output.decode('utf-8')
     except subprocess.CalledProcessError as e:
-        sys.exit('_call_hmount error: {0}'.format(e.output,))
+        hmount_output = (True, e)
+#        sys.exit('_call_hmount error: {0}'.format(e.output,))
     return hmount_output
 
 
@@ -100,7 +101,8 @@ def _call_hls():
         hls_mod_output = hls_mod_output.decode('macroman')
  
     except subprocess.CalledProcessError as e:
-        sys.exit('_call_hls error: {0}'.format(e.output,))
+#        sys.exit('_call_hls error: {0}'.format(e.output,))
+        return (True, e)
     if DEBUG:
         with open('DEBUG_hfs2dfxml.txt', 'w') as debugfile:
             _debug_output = hls_cre_output.split('\n')
@@ -140,10 +142,12 @@ def _parse_hls_mod(hls_mod_raw):
         else:
             sys.exit('_parse_hls_mod error: Unexpected line format.\n' +
                      '|{0}|'.format(hls_mod_line))
+            # NOTE: Should be a logger event, probably?
 
         if mod_cnid in hls_mod_dict:
             sys.exit('_parse_hls_mod error: Duplcate CNID found.\n' +
                      '|{0}|'.format(hls_mod_line))
+            # NOTE: Okay, what even happens in this case.
         else:
             hls_mod_dict[mod_cnid] = (mod_mdate, mod_filename)
     return hls_mod_dict
@@ -163,8 +167,9 @@ def _file_line(regex_file_cre):
         HFS_file_line['name_type'] = 'r'
         HFS_file_line['HFSlocked'] = '1'
     else:
-        sys.exit('_file_line error: Unexpected Entry Type.\n' +
-                 '{0}'.format(regex_file_cre.groups()))
+        HFS_file_line['name_type'] = '-' # Unknown type if not f
+#        sys.exit('_file_line error: Unexpected Entry Type.\n' +
+#                 '{0}'.format(regex_file_cre.groups()))
     if regex_file_cre.group(2).endswith('i'):
         HFS_file_line['HFSflags'] = 'i'
 
@@ -218,8 +223,9 @@ def _dir_line(regex_dir_cre):
         HFS_dir_line['name_type'] = 'd'
         HFS_dir_line['HFSlocked'] = '1'
     else:
-        sys.exit('_dir_line error: Unexpected entry type.\n' +
-                 '{0}'.format(regex_dir_cre.groups()))
+        HFS_dir_line['name_type'] = '-' # Unknown type if not d
+#        sys.exit('_dir_line error: Unexpected entry type.\n' +
+#                 '{0}'.format(regex_dir_cre.groups()))
     if regex_dir_cre.group(2).endswith('i'):
         HFS_dir_line['HFSflags'] = 'i'
     _crtime = _reformat_date(regex_dir_cre.group(4))
@@ -231,9 +237,15 @@ def _dir_line(regex_dir_cre):
 
 def _line_to_dfxml(hfs_line, path_delim):
     # Takes in dictionary with properties of HFS file or directory
-    # Returns DFXML FileObject with appropriate values assigned.
+    # Returns tuple:
+    # (DFXML FileObject for data fork,
+    #  DFXML FileObject for resource fork)
+    # with appropriate values assigned. 
     # NOTE: hfsutils output does not include deleted files.
-    this_fileobj = DFXML.FileObject()
+
+    this_fileobj = DFXML.FileObject() # data fork
+    this_rsrcobj = None # empty resource fork
+
     this_fileobj.inode = hfs_line['cnid']
     this_fileobj.name_type = hfs_line['name_type']
     this_fileobj.alloc = '1'
@@ -243,9 +255,10 @@ def _line_to_dfxml(hfs_line, path_delim):
     else:
         this_fileobj.filename = hfs_line['dirname']
 
-    # Only change delimiter in filepath if needed
+    # Only change delimiter in filepath if needed (data fork)
     if path_delim != 'classic':
         this_fileobj.filename = this_fileobj.filename.replace(':', '/')
+        this_fileobj.filename = this_fileobj.filename.lstrip('/')
 
     if hfs_line.get('libmagic') is not None:
         this_fileobj.libmagic = hfs_line['libmagic']
@@ -263,11 +276,6 @@ def _line_to_dfxml(hfs_line, path_delim):
                                       'wiki/HFS}HFStype_creator')
         _HFStype_creator.text = hfs_line['HFStype_creator']
         HFS_namespace_elems.append(_HFStype_creator)
-    if hfs_line.get('HFSrsrcsize') is not None:
-        _HFSrsrcsize = ET.Element('{http://www.forensicswiki.org/' +
-                                  'wiki/HFS}HFSrsrcsize')
-        _HFSrsrcsize.text = hfs_line['HFSrsrcsize']
-        HFS_namespace_elems.append(_HFSrsrcsize)
     if hfs_line.get('HFSlocked') is not None:
         _HFSlocked = ET.Element('{http://www.forensicswiki.org/' +
                                 'wiki/HFS}HFSlocked')
@@ -279,7 +287,29 @@ def _line_to_dfxml(hfs_line, path_delim):
         _HFSflags.text = hfs_line['HFSflags']
         HFS_namespace_elems.append(_HFSflags)
     this_fileobj.externals = (HFS_namespace_elems)
-    return this_fileobj
+
+    if hfs_line.get('HFSrsrcsize') is not None:
+        this_rsrcobj = DFXML.FileObject() # resource fork
+        this_rsrcobj.name_type = '-'
+        this_rsrcobj.parent_object = this_fileobj
+
+        if path_delim == 'classic':
+            this_rsrcobj.filename = '{0}:rsrc'.format(this_fileobj.filename)
+        elif path_delim == 'macosx':
+            this_rsrcobj.filename = '{0}/rsrc'.format(this_fileobj.filename)
+        elif path_delim == 'osx':
+            this_rsrcobj.filename = '{0}/..namedfork/rsrc'.format(this_fileobj.filename)
+        elif path_delim == 'companion':
+            _rsrcpath = this_fileobj.filename.split('/')
+            _rsrcpath[-1] = '._{0}'.format(_rsrcpath[-1])
+            this_rsrcobj.filename = '/'.join(_rsrcpath).lstrip('/')
+            this_rsrcobj.name_type = hfs_line['name_type'] # Change from -
+        else:
+            pass # No other options
+
+        this_rsrcobj.filesize = hfs_line['HFSrsrcsize']
+
+    return (this_fileobj, this_rsrcobj)
 
 
 def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
@@ -393,11 +423,22 @@ def hfs_volobj(hfs_filename, hfs_delimiter):
     this_volobj.block_size = _block_size
     this_volobj.block_count = _block_count
     hfs_fileinfo = _call_hmount(hfs_filename)
+    if hfs_fileinfo[0] is True:
+        this_volobj.error = hfs_fileinfo[1]
+        return this_volobj # NOTE: This doesn't seem to get written out to the XML; why?
     hlscre, hlsmod = _call_hls()
+    if hlscre is True:
+        this_volobj.error = hlsmod
+        return this_volobj # NOTE: This doesn't seem to get written out to the XML; why?
     hlsmoddict = _parse_hls_mod(hlsmod)
     linedicts = _parse_hls_cre(hlscre, hlsmoddict)
     for linedict in linedicts:
-        this_volobj.append(_line_to_dfxml(linedict, hfs_delimiter))
+        # NOTE: This is the part I'd expect it to break
+        #       I mean, it's the most obvious part
+        datafork, rsrcfork = _line_to_dfxml(linedict, hfs_delimiter)
+        this_volobj.append(datafork)
+        if rsrcfork is not None:
+            this_volobj.append(rsrcfork)
     _call_humount(report_err=True)  # Report if HFS file did not unmount
     return this_volobj
 
@@ -405,7 +446,7 @@ def hfs_volobj(hfs_filename, hfs_delimiter):
 def hfs2dfxml(hfs_file, hfs_delim):
     _call_humount()  # Ensure no other volume mounted by hfsutils
     ET.register_namespace('hfs', 'http://www.forensicswiki.org/wiki/HFS')
-    DFXML_root = DFXML.DFXMLObject(version='1.0',
+    DFXML_root = DFXML.DFXMLObject(version='1.1.1',
                                    dc={'type': 'Disk Image'})
     DFXML_root.sources = [os.path.basename(hfs_file)]
     DFXML_root.append(hfs_volobj(hfs_file, hfs_delim))
@@ -419,9 +460,8 @@ if __name__ == '__main__':
     parser.add_argument('output', metavar='[Output File]',
                         help='Name of output XML file (will not overwrite)')
     parser.add_argument('-d', '--delimiter', type=str, choices=['classic', 
-                        'macosx', 'osx'], default='classic',
-                        help='Delimiter format (classic [default], macosx, osx)')
-                        
+                        'macosx', 'osx', 'companion'], default='classic',
+                        help='Delimiter format (classic [default], macosx, osx, companion)')
     args = parser.parse_args()
 
     if os.path.isfile(args.hfsvol):
@@ -437,6 +477,6 @@ if __name__ == '__main__':
 
     with open(dfxml, 'w') as dfxmloutput:
         dfxmloutput.write(hfs2dfxml(hfs, delim).to_dfxml())
-    # NOTE: Comment out line below if pretty-printing XML isn't needed    
+    # NOTE: Comment out line below if pretty-printing XML isn't needed
     subprocess.check_output(['xmllint', '--format', dfxml,
                              '--output', dfxml])
