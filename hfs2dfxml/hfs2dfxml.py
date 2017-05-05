@@ -62,7 +62,11 @@ def _call_hmount(hfsfilename):
     try:
         hmount_output = subprocess.check_output(['hmount', hfsfilename],
                                                 stderr=subprocess.STDOUT)
-        hmount_output = hmount_output.decode('utf-8')
+        try:
+            hmount_output = hmount_output.decode('utf-8')
+        except:
+            hmount_output = hmount_output.decode('macroman') # Just in case
+            # It will fail ungracefully here if neither encoding works
     except subprocess.CalledProcessError as e:
 #        hmount_output = (True, e)
         sys.exit('_call_hmount error: {0}'.format(e.output,))
@@ -189,10 +193,16 @@ def _hcopy_res(hfs_filepath):
     # Returns strings for libmagic, md5 and sha1 hash of file.
     # NOTE: This copies the output of hcopy to a temporary file.
     # NOTE: This only runs on data fork of specified file. (hcopy -r)
+    # NOTE: In rare cases, this fails due to a limitation in hcopy
+    # NOTE: In that case, None will be returns for all values
     with tempfile.NamedTemporaryFile(delete=False) as tmp_fileout:
-        tmp_fileout.write(subprocess.check_output(['hcopy', '-r',
-                                                  r'{0}'.format(
-                                                   hfs_filepath,), '-']))
+        try:
+            tmp_fileout.write(subprocess.check_output(['hcopy', '-r',
+                                                    r'{0}'.format(
+                                                    hfs_filepath,), '-']))
+        except:
+            return None, None, None
+            # TODO: Report an error in reading the file
         tmp_fileout.close()
         _libmagic = magic.open(magic.MAGIC_NONE)
         _libmagic.load()
