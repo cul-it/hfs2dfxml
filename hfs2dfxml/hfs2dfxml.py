@@ -26,6 +26,9 @@ from hashlib import sha1
 #sys.path.append('dfxml/python')
 import Objects as DFXML
 
+# Import FileInFile (from DidierStevens)
+import fileinfile
+
 
 PATTERNFILE = re.compile('^(\d+)\s+(\w+)\s+(.{4}/.{4})\s+(\d+)\s+(\d+)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*")(\**)$')
 PATTERNDIR = re.compile('^(\d+)\s+(\w+)\s+(\d+\sitems*)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*"):$')
@@ -184,7 +187,7 @@ def _file_line(regex_file_cre):
     return HFS_file_line
 
 
-def _hcopy_res(hfs_filepath):
+def _hcopy_res(hfs_filepath, hfs_filesrc):
     # Takes full path of hfs file.
     # Returns strings for libmagic, md5 and sha1 hash of file.
     # NOTE: This copies the output of hcopy to a temporary file.
@@ -208,8 +211,10 @@ def _hcopy_res(hfs_filepath):
                 buf = tmp_hash.read(128)
         file_md5 = _hasher_md5.hexdigest()
         file_sha1 = _hasher_sha1.hexdigest()
+        byteruns = fileinfile.FindFileInFile(tmp_fileout.name, hfs_filesrc)
+#        byteruns = [(123,456)] # TODO Fix this dummy number when you've got it
         os.unlink(tmp_fileout.name)
-        return libmagic, file_md5, file_sha1
+        return libmagic, file_md5, file_sha1, byteruns
 
 
 def _dir_line(regex_dir_cre):
@@ -243,12 +248,14 @@ def _line_to_dfxml(hfs_line, path_delim):
     # with appropriate values assigned. 
     # NOTE: hfsutils output does not include deleted files.
 
+
     this_fileobj = DFXML.FileObject() # data fork
     this_rsrcobj = None # empty resource fork
 
     this_fileobj.inode = hfs_line['cnid']
     this_fileobj.name_type = hfs_line['name_type']
     this_fileobj.alloc = '1'
+
     if hfs_line.get('filename') is not None:
         this_fileobj.filename = hfs_line['filename']
         this_fileobj.filesize = hfs_line['filesize']
@@ -288,6 +295,15 @@ def _line_to_dfxml(hfs_line, path_delim):
         HFS_namespace_elems.append(_HFSflags)
     this_fileobj.externals = (HFS_namespace_elems)
 
+    if hfs_line.get('byte_runs') is not None:
+        this_byteruns = DFXML.ByteRuns()
+        for brs in hfs_line['byte_runs']:
+            br = DFXML.ByteRun()
+            br.file_offset = brs[0]
+            br.len = brs[1]
+            this_byteruns.append(br)
+        this_fileobj.byte_runs = this_byteruns
+
     if hfs_line.get('HFSrsrcsize') is not None:
         this_rsrcobj = DFXML.FileObject() # resource fork
         this_rsrcobj.name_type = '-'
@@ -312,7 +328,7 @@ def _line_to_dfxml(hfs_line, path_delim):
     return (this_fileobj, this_rsrcobj)
 
 
-def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
+def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hfs_originfile, hcopy=True):
     # Takes in raw hls output with creation times and dict with mod times
     # Returns list of dictionaries with HFS data
     hfs_all_files = []
@@ -371,7 +387,8 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
                     if hcopy and this_line['filesize'] != '0':
                         _hcopy_name = _format_hcopy_name(this_line['filename'])
                         this_line['libmagic'], this_line['md5'], \
-                        this_line['sha1'] = _hcopy_res(_hcopy_name)
+                        this_line['sha1'], this_line['byte_runs'] = \
+                        _hcopy_res(_hcopy_name, hfs_originfile)
 
                 elif (not(parse_file_cre) and parse_dir_cre):
                     this_line = _dir_line(parse_dir_cre)
@@ -431,7 +448,7 @@ def hfs_volobj(hfs_filename, hfs_delimiter):
         this_volobj.error = hlsmod
         return this_volobj # NOTE: This doesn't seem to get written out to the XML; why?
     hlsmoddict = _parse_hls_mod(hlsmod)
-    linedicts = _parse_hls_cre(hlscre, hlsmoddict)
+    linedicts = _parse_hls_cre(hlscre, hlsmoddict, hfs_filename)
     for linedict in linedicts:
         # NOTE: This is the part I'd expect it to break
         #       I mean, it's the most obvious part
