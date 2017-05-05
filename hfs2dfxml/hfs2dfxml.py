@@ -64,8 +64,8 @@ def _call_hmount(hfsfilename):
                                                 stderr=subprocess.STDOUT)
         hmount_output = hmount_output.decode('utf-8')
     except subprocess.CalledProcessError as e:
-        hmount_output = (True, e)
-#        sys.exit('_call_hmount error: {0}'.format(e.output,))
+#        hmount_output = (True, e)
+        sys.exit('_call_hmount error: {0}'.format(e.output,))
     return hmount_output
 
 
@@ -423,9 +423,9 @@ def hfs_volobj(hfs_filename, hfs_delimiter):
     this_volobj.block_size = _block_size
     this_volobj.block_count = _block_count
     hfs_fileinfo = _call_hmount(hfs_filename)
-    if hfs_fileinfo[0] is True:
-        this_volobj.error = hfs_fileinfo[1]
-        return this_volobj # NOTE: This doesn't seem to get written out to the XML; why?
+#    if hfs_fileinfo[0] is True:
+#        this_volobj.error = hfs_fileinfo[1]
+#        return this_volobj # NOTE: VolumeObject has no error attribute
     hlscre, hlsmod = _call_hls()
     if hlscre is True:
         this_volobj.error = hlsmod
