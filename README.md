@@ -4,19 +4,15 @@ Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 ## Caveat
 This script is still in development. It is recommended that you check your results against another tool. If you encounter an error or unexpected results, please file an issue on GitHub, or use the contact information below.
 
-This version uses Python 2.7. For Python 3, see: https://github.com/cul-it/hfs2dfxml/tree/python3
-
 ## System requirements and setup
 * `hfsutils` (http://www.mars.org/home/rob/proj/hfs; or installed via your distribution's package manager)
-* `python-magic`
+* `python3-magic`
 * `xmllint` for validation (in tests) and pretty-printing DFXML output.
-* Python DFXML Bindings (http://github.org/simsong/dfxml)
-* `hfs2dfxml/hfs2dfxml.py` - Specify path for Python DFXML Bindings in script
 * DFXML Schema (http://github.org/dfxml-working-group/dfxml-schema) for testing and validation of results
 * `tests/hfs2dfxml_tests.py` - Specify path for image file in script to run tests
 
-## BitCurator directions
-The following directions were tested on BitCurator 1.5.11. The following installation/configuration steps require the Terminal.
+## BitCurator installation directions
+The following directions were tested on BitCurator 1.7.98. The following installation/configuration steps require the Terminal.
 
 * Test dependencies
   * `which xmllint` - Output should be `/usr/bin/xmllint`
@@ -25,25 +21,35 @@ The following directions were tested on BitCurator 1.5.11. The following install
 * Install hfsutils (only if `which hmount` fails; see above)
   * `sudo apt-get install hfsutils` (to install hfsutils)
   * `which hmount` - Output should be `/usr/bin/hmount` (no output means hfsutils is not installed)
-* Get python-magic
-  * `sudo apt-get install python-magic`
+* Get python3-magic
+  * `sudo apt-get install python3-magic`
 * Download hfs2dfxml and set up DFXML libraries and schema
   * `cd ~/Desktop`
   * `git clone https://github.com/cul-it/hfs2dfxml`
-  * `cd hfs2dfxml/hfs2dfxml`
-  * `git clone https://github.com/simsong/dfxml/`
+  * `git submodule update --init --recursive`
   * `cd ../tests`
   * `git clone https://github.com/dfxml-working-group/dfxml_schema`
-  * To run, you should be in the `hfs2dfxml/hfs2dfxml` directory
 
 ## How to use
 To generate DFXML for an HFS-formatted volume, navigate to the hfs2dfxml directory and use:
 
-`python hfs2dfxml.py [HFS volume] [output file]`
+`python3 hfs2dfxml.py [HFS volume] [output file]`
 
-Note: [output file] must not already exist.
+Note: `[output file]` must not already exist.
+
+Optional parameters: `-d, --delimiter [classic, macosx, osx, companion]`
+
+`classic`: Output paths with a colon delimiter; reports resource forks as `filename:rsrc`
+
+`macosx`: Output paths with a slash delimiter; reports resource forks as `filename/rsrc`
+
+`osx`: Output paths with a slash delimiter; reports resource forks as `filename/..namedfork/rsrc`
+
+`companion`: Output paths with a slash delimiter; reports resource forks as `._filename`
 
 Optionally, place hfs2dfxml in your Python path and import it in your own code to call `hfs_volobj`. This function returns a standalone DFXML Volume object.
+
+If you encounter the following error, "magic module object has no attribte 'open'" ensure that python3-magic is installed. If you encounter an error with ascii codecs, ensure you're running the code with python3.
 
 ## Known limitations (and implied to do list)
 * HFS namespace is projected and not yet officially part of the DFXML schema. See: https://github.com/dfxml-working-group/dfxml_schema/issues/23
