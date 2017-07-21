@@ -4,8 +4,7 @@ Utility to parse hfsutils output and produce DFXML for HFS-formatted disk images
 ## Caveat
 This script is still in development. It is recommended that you check your results against another tool. If you encounter an error or unexpected results, please file an issue on GitHub, or use the contact information below.
 
-
-## System requirements
+## System requirements and setup
 * `hfsutils` (http://www.mars.org/home/rob/proj/hfs; or installed via your distribution's package manager)
 * `python3-magic`
 * `xmllint` for validation (in tests) and pretty-printing DFXML output.
