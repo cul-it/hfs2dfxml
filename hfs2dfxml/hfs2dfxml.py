@@ -30,7 +30,7 @@ import Objects as DFXML
 PATTERNFILE = re.compile('^(\d+)\s+(\w+)\s+(.{4}/.{4})\s+(\d+)\s+(\d+)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*")(\**)$')
 PATTERNDIR = re.compile('^(\d+)\s+(\w+)\s+(\d+\sitems*)\s+(\w{3}\s{1,2}\d{1,2}\s{1,2}\d{2}:{0,1}\d{2})\s(".*"):$')
 
-DEBUG = True
+DEBUG = False
 
 def _reformat_date(unformatted):
     # Reformats dates found in hls output for comparisons.
