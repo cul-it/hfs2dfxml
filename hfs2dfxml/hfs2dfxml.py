@@ -112,12 +112,29 @@ def _call_hls():
             debugfile.write(hls_cre_output)
     return (hls_cre_output, hls_mod_output)
 
+def _refactor_hls(hls_raw):
+    hls_raw = hls_raw.split('\n')
+    _indexes = []
+
+    for i,hl in enumerate(hls_raw):
+        if hl == '*' or hl == '"':
+            _indexes.append(i-1)
+
+    for ind in _indexes:
+        hls_raw[ind] = '{0}\\n{1}'.format(hls_raw[ind], hls_raw[ind+1])
+
+    hls_raw[:] = [i for i in hls_raw if i != '"']
+    hls_raw[:] = [j for j in hls_raw if j != '*']
+
+    return hls_raw
+
 
 def _parse_hls_mod(hls_mod_raw):
     # Takes raw hls input (assumes file modification times).
     # Returns a dictionary to correlate with additional hls output.
     hls_mod_dict = {}
-    hls_mod_raw = hls_mod_raw.split('\n')
+#    hls_mod_raw = hls_mod_raw.split('\n')
+    hls_mod_raw = _refactor_hls(hls_mod_raw)
     for hls_mod_line in hls_mod_raw:
         if hls_mod_line.startswith(':'):
             continue
@@ -323,8 +340,12 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
     # Takes in raw hls output with creation times and dict with mod times
     # Returns list of dictionaries with HFS data
     hfs_all_files = []
-    hls_cre_sections = hls_cre_raw.split('\n\n')
-    hls_cre_sections = [hlstmp.split('\n') for hlstmp in hls_cre_sections]
+    hls_cre_sections = []
+    _hls_cre_sections = hls_cre_raw.split('\n\n')
+#    hls_cre_sections = [hlstmp.split('\n') for hlstmp in hls_cre_sections]
+    for hcs in _hls_cre_sections:
+        hls_cre_sections.append(_refactor_hls(hcs))
+
     _standalone_dir_id = re.compile(':(.*):')
 
     for hls_cre_block in enumerate(hls_cre_sections):
