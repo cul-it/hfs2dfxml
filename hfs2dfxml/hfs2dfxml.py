@@ -471,7 +471,10 @@ if __name__ == '__main__':
                         help='Name of output XML file (will not overwrite)')
     parser.add_argument('-d', '--delimiter', type=str, choices=['classic', 
                         'macosx', 'osx', 'companion'], default='classic',
-                        help='Delimiter format (classic [default], macosx, osx, companion)')
+                        help='Delimiter format (classic [default], macosx,'+
+                        ' osx, companion)')
+    parser.add_argument('-p', '--prettyprint', action='store_true',
+                        default='False')
     args = parser.parse_args()
 
     if os.path.isfile(args.hfsvol):
@@ -487,6 +490,6 @@ if __name__ == '__main__':
 
     with open(dfxml, 'w') as dfxmloutput:
         dfxmloutput.write(hfs2dfxml(hfs, delim).to_dfxml())
-    # NOTE: Comment out line below if pretty-printing XML isn't needed
-    subprocess.check_output(['xmllint', '--format', dfxml,
-                             '--output', dfxml])
+    if args.prettyprint is True:
+        subprocess.check_output(['xmllint', '--format', dfxml,
+                                 '--output', dfxml])
