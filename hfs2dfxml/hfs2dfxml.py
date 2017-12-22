@@ -121,6 +121,7 @@ def _parse_hls_mod(hls_mod_raw):
     # Returns a dictionary to correlate with additional hls output.
     hls_mod_dict = {}
     hls_mod_raw = hls_mod_raw.split('\n')
+    alt = 0
     for hls_mod_line in hls_mod_raw:
         if hls_mod_line.startswith(':'):
             continue
@@ -149,9 +150,9 @@ def _parse_hls_mod(hls_mod_raw):
             # NOTE: Should be a logger event, probably?
 
         if mod_cnid in hls_mod_dict:
-            sys.exit('_parse_hls_mod error: Duplcate CNID found.\n' +
-                     '|{0}|'.format(hls_mod_line))
-            # NOTE: Okay, what even happens in this case.
+            mod_cnid = '{0}-{1}'.format(alt, mod_cnid)
+            hls_mod_dict[mod_cnid] = (mod_mdate, mod_filename)
+            alt = alt + 1
         else:
             hls_mod_dict[mod_cnid] = (mod_mdate, mod_filename)
     return hls_mod_dict
@@ -364,11 +365,23 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
                         if _mod_date != datetime(1904, 1, 1):
                             this_line['mtime'] = _mod_date
                     else:
-                        sys.exit('_parse_hls_cre error: Inode/filename' +
-                                 'mismatch when retrieving modification' +
-                                 'time.\n' +
-                                 '|{0}|{1}|'.format(_fname_verify,
-                                                    _filename))
+                        _cnidend = '-{0}'.format(_cnid)
+                        _alts = [key for key in hls_mod_dict if \
+                                 key.endswith(_cnidend)]
+                        for a in _alts:
+                            _mod_alt, _fname_alt = hls_mod_dict[a]
+                            if _fname_alt == _filename:
+                                _mod_date = _reformat_date(_mod_alt)
+                                if _mod_date != datetime(1904, 1, 1):
+                                    this_line['mtime'] = _mod_date
+                            break
+                    # NOTE: If no alternate CNID is found, a mod date
+                    #       will not be assigned.
+#                        sys.exit('_parse_hls_cre error: Inode/filename' +
+#                                 'mismatch when retrieving modification' +
+#                                 'time.\n' +
+#                                 '|{0}|{1}|'.format(_fname_verify,
+#                                                    _filename))
                     _filename = _filename.strip('"')
                     _dirprefix = this_dir
 
