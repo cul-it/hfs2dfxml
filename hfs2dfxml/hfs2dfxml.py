@@ -471,7 +471,8 @@ if __name__ == '__main__':
                         help='Name of output XML file (will not overwrite)')
     parser.add_argument('-d', '--delimiter', type=str, choices=['classic', 
                         'macosx', 'osx', 'companion'], default='classic',
-                        help='Delimiter format (classic [default], macosx, osx, companion)')
+                        help='Delimiter format (classic [default], macosx,'+
+                        ' osx, companion)')
     args = parser.parse_args()
 
     if os.path.isfile(args.hfsvol):
