@@ -473,7 +473,8 @@ if __name__ == '__main__':
                         'macosx', 'osx', 'companion'], default='classic',
                         help='Delimiter format (classic [default], macosx,'+
                         ' osx, companion)')
-    parser.add_argument('-p', '--prettyprint', action='store_true',
+    parser.add_argument('-s', '--strict', action='store_true',
+                        help='Turn on strict mode for XML parsing',
                         default='False')
     args = parser.parse_args()
 
