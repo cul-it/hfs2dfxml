@@ -491,6 +491,6 @@ if __name__ == '__main__':
 
     with open(dfxml, 'w') as dfxmloutput:
         dfxmloutput.write(hfs2dfxml(hfs, delim).to_dfxml())
-    if args.prettyprint is True:
+    if args.strict is True:
         subprocess.check_output(['xmllint', '--format', dfxml,
                                  '--output', dfxml])
