@@ -204,10 +204,13 @@ def _hcopy_res(hfs_filepath):
             return None, None, None
             # TODO: Report an error in reading the file
         tmp_fileout.close()
-        _libmagic = magic.open(magic.MAGIC_NONE)
-        _libmagic.load()
-        libmagic = _libmagic.file(tmp_fileout.name)
-        _libmagic.close()
+        try:
+            libmagic = magic.from_file(tmp_fileout.name)
+        except:
+            _libmagic = magic.open(magic.MAGIC_NONE)
+            _libmagic.load()
+            libmagic = _libmagic.file(tmp_fileout.name)
+            _libmagic.close()
         _hasher_md5 = md5()
         _hasher_sha1 = sha1()
         with open(tmp_fileout.name, 'rb') as tmp_hash:
@@ -414,11 +417,14 @@ def _parse_hls_cre(hls_cre_raw, hls_mod_dict, hcopy=True):
 def hfs_volobj(hfs_filename, hfs_delimiter):
     this_volobj = DFXML.VolumeObject()
     this_volobj.ftype_str = 'HFS'
-    _volmagic = magic.open(magic.MAGIC_NONE)
-    _volmagic.load()
-    _volstring = _volmagic.file(hfs_filename)
-    _volmagic.close()
-    # NOTE: Need more testing with different HFS disk images
+    try:
+        _volstring = magic.from_file(hfs_filename)
+    except:
+        _volmagic = magic.open(magic.MAGIC_NONE)
+        _volmagic.load()
+        _volstring = _volmagic.file(hfs_filename)
+        _volmagic.close()
+        # NOTE: Need more testing with different HFS disk images
     if _volstring.startswith('Apple Driver Map'):
         _block_size, _block_count = re.search('blocksize (\d+), ' +
                                               'blockcount (\d+)',
