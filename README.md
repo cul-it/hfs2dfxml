@@ -32,7 +32,7 @@ The following installation/configuration steps require the Terminal. (For Ubuntu
   * macOS - python-magic and libmagic
     * `pip3 install python-magic`
     * `brew install libmagic`
-* Download hfs2dfxml and set up DFXML libraries and schema
+* Download hfs2dfxml and set up DFXML libraries and schema (Note: for simplicity, this assumes you'd like to install it to the Desktop. You can certainly install this elsewhere! The directions are essentially the same, save for the installation location.)
   * `cd ~/Desktop`
   * `git clone https://github.com/cul-it/hfs2dfxml`
   * `cd ~/Desktop/hfs2dfxml`
