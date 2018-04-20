@@ -10,8 +10,10 @@ This script is still in development. It is recommended that you check your resul
 * `xmllint` for validation (in tests) and pretty-printing DFXML output.
 * DFXML Schema (http://github.org/dfxml-working-group/dfxml-schema) for testing and validation of results
 * `tests/hfs2dfxml_tests.py` - Specify path for image file in script to run tests
+* `git`
+* `homebrew` - (https://brew.sh/) macOS requirement. Used to set-up hfsutils and libmagic.
 
-## BitCurator installation directions
+## BitCurator and macOS installation directions
 The following directions were tested on BitCurator 1.7.98. The following installation/configuration steps require the Terminal.
 
 * Test dependencies
@@ -19,25 +21,35 @@ The following directions were tested on BitCurator 1.7.98. The following install
   * `which git` - Output should be `/usr/bin/git`
   * `which hmount` - Output should be `/usr/local/bin/hmount` (no output means hfsutils is not installed)
 * Install hfsutils (only if `which hmount` fails; see above)
-  * `sudo apt-get install hfsutils` (to install hfsutils)
-  * `which hmount` - Output should be `/usr/bin/hmount` (no output means hfsutils is not installed)
-* Get python3-magic
-  * `sudo apt-get install python3-magic`
+  * BitCurator 
+    * `sudo apt-get install hfsutils` (to install hfsutils)
+    * `which hmount` - Output should be `/usr/bin/hmount` (no output means hfsutils is not installed)
+  * macOS 
+    * `brew install hfsutils` 
+* Get python magic
+  * BitCurator - python3-magic 
+    * `sudo apt-get install python3-magic`
+  * macOS - libmagic
+    * `brew install libmagic`
 * Download hfs2dfxml and set up DFXML libraries and schema
   * `cd ~/Desktop`
   * `git clone https://github.com/cul-it/hfs2dfxml`
+  * `cd ~/Desktop/hfs2dfxml`
   * `git submodule update --init --recursive`
   * `cd ../tests`
   * `git clone https://github.com/dfxml-working-group/dfxml_schema`
 
 ## How to use
-To generate DFXML for an HFS-formatted volume, navigate to the hfs2dfxml directory and use:
-
-`python3 hfs2dfxml.py [HFS volume] [output file]`
+To generate DFXML for an HFS-formatted volume:
+* `cd ~/Desktop/hfs2dfxml/hfs2dfxml`
+* `python3 hfs2dfxml.py [HFS volume] [output file]`
 
 Note: `[output file]` must not already exist.
 
-Optional parameters: `-d, --delimiter [classic, macosx, osx, companion]`
+Optional parameters: 
+`-d, --delimiter [classic, macosx, osx, companion]`
+
+`-s --strict`: Use xmllint and generate easy to read XML
 
 `classic`: Output paths with a colon delimiter; reports resource forks as `filename:rsrc`
 
@@ -50,6 +62,12 @@ Optional parameters: `-d, --delimiter [classic, macosx, osx, companion]`
 Optionally, place hfs2dfxml in your Python path and import it in your own code to call `hfs_volobj`. This function returns a standalone DFXML Volume object.
 
 If you encounter the following error, "magic module object has no attribte 'open'" ensure that python3-magic is installed. If you encounter an error with ascii codecs, ensure you're running the code with python3.
+
+For macOS use the hsf2dfxml magic branch:
+  * `cd ~/Desktop/hfs2dfxml`
+  * `git pull`
+  * `git checkout magic`
+  * Then follow the same use instructions above.
 
 ## Known limitations (and implied to do list)
 * HFS namespace is projected and not yet officially part of the DFXML schema. See: https://github.com/dfxml-working-group/dfxml_schema/issues/23
