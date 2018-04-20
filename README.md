@@ -48,6 +48,7 @@ To generate DFXML for an HFS-formatted volume:
 Note: `[output file]` must not already exist.
 
 Optional parameters: 
+
 `-s --strict`: Use `xmllint` and generate easy to read and parsed XML
 
 `-d, --delimiter [classic, macosx, osx, companion]`
